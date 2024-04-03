@@ -23,7 +23,8 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
-import { DarkTheme, useTheme } from "@react-navigation/native";
+import { useTheme } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabBar = ({ state, descriptors, navigation }) => {
   return (
@@ -107,10 +108,12 @@ const TabBar = ({ state, descriptors, navigation }) => {
 const TabLayout = () => {
   const theme = useTheme();
   const { width, height } = useWindowDimensions();
+  const { bottom } = useSafeAreaInsets();
   const isLandScape = width > height;
+  const TAB_PADDING = 5;
 
   const ACTIVE_WIDTH = isLandScape ? height : width * 0.8;
-  const CLAMP_HEIGHT = isLandScape ? -width * 0.03 : -height * 0.03;
+  const CLAMP_HEIGHT = (isLandScape ? -width * 0.03 : -height * 0.03) - bottom;
 
   const isLongSet = useSharedValue(0);
   const offset = useSharedValue({ x: 0, y: 0 });
@@ -193,10 +196,16 @@ const TabLayout = () => {
     });
 
   const animatedStyles = useAnimatedStyle(() => {
+    const paddingBottom = interpolate(
+      offset.value.y,
+      [0, CLAMP_HEIGHT],
+      [bottom, TAB_PADDING],
+      Extrapolation.CLAMP
+    );
     const rounded = interpolate(
       offset.value.y,
       [0, CLAMP_HEIGHT],
-      [0, 100],
+      [3, 100],
       Extrapolation.CLAMP
     );
     const xpace = interpolate(
@@ -222,6 +231,7 @@ const TabLayout = () => {
           translateX: (width - xpace) / 2,
         },
       ],
+      paddingBottom: paddingBottom,
       backgroundColor: bgColor,
       elevation: isLongSet.value ? 10 : 5,
       width: xpace,
@@ -245,7 +255,7 @@ const TabLayout = () => {
             {
               position: "absolute",
               bottom: 0,
-              paddingVertical: 3,
+              paddingVertical: TAB_PADDING,
               shadowColor: "#000",
             },
             animatedStyles,
@@ -257,18 +267,6 @@ const TabLayout = () => {
     );
   };
 
-  // {
-  //   "colors":{
-  //   "background":"rgb(1, 1, 1)",
-  //   "border":"rgb(39, 39, 41)",
-  //   "card":"rgb(18, 18, 18)",
-  //   "notification":"rgb(255, 69, 58)",
-  //   "primary":"rgb(10, 132, 255)",
-  //   "text":"rgb(229, 229, 231)"
-  //   },
-  //   "dark":true
-  //   }
-
   return (
     <Tabs
       screenOptions={{ tabBarActiveTintColor: theme.colors.primary }}
@@ -279,12 +277,7 @@ const TabLayout = () => {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              // name={focused ? "home" : "home-outline"}
-              name={"home"}
-              size={24}
-              color={color}
-            />
+            <Ionicons name={"home"} size={24} color={color} />
           ),
         }}
       />
@@ -316,12 +309,7 @@ const TabLayout = () => {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              // name={focused ? "person" : "person-outline"}
-              name={"person"}
-              size={24}
-              color={color}
-            />
+            <Ionicons name={"person"} size={24} color={color} />
           ),
         }}
       />
