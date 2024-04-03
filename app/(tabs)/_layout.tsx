@@ -23,7 +23,7 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
-import { useTheme } from "@react-navigation/native";
+import { DarkTheme, useTheme } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabBar = ({ state, descriptors, navigation }) => {
@@ -277,7 +277,12 @@ const TabLayout = () => {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={"home"} size={24} color={color} />
+            <Ionicons
+              // name={focused ? "home" : "home-outline"}
+              name={"home"}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
@@ -309,7 +314,12 @@ const TabLayout = () => {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={"person"} size={24} color={color} />
+            <Ionicons
+              // name={focused ? "person" : "person-outline"}
+              name={"person"}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
