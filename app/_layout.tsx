@@ -16,7 +16,13 @@ export default function AppLayout() {
       <SafeAreaProvider>
         <ThemeProvider value={theme}>
           <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerShown: false,
+                navigationBarColor: theme.colors.card,
+              }}
+            />
           </Stack>
         </ThemeProvider>
       </SafeAreaProvider>
