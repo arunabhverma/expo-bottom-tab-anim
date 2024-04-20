@@ -1,17 +1,17 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import {
-  Dimensions,
+  Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useColorScheme,
   useWindowDimensions,
 } from "react-native";
 import Animated, {
-  Easing,
   Extrapolation,
-  ReduceMotion,
   interpolate,
   interpolateColor,
   runOnJS,
@@ -23,8 +23,9 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
-import { DarkTheme, useTheme } from "@react-navigation/native";
+import { useTheme } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 
 const TabBar = ({ state, descriptors, navigation }) => {
   return (
@@ -107,6 +108,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
 
 const TabLayout = () => {
   const theme = useTheme();
+  const tint = useColorScheme();
   const { width, height } = useWindowDimensions();
   const { bottom } = useSafeAreaInsets();
   const isLandScape = width > height;
@@ -232,7 +234,7 @@ const TabLayout = () => {
         },
       ],
       paddingBottom: paddingBottom,
-      backgroundColor: bgColor,
+      backgroundColor: Platform.OS === "android" ? bgColor : "transparent",
       elevation: isLongSet.value ? 10 : 5,
       width: xpace,
       borderRadius: rounded,
@@ -256,24 +258,48 @@ const TabLayout = () => {
               position: "absolute",
               bottom: 0,
               paddingVertical: TAB_PADDING,
+
               shadowColor: "#000",
+              overflow: "hidden",
             },
             animatedStyles,
           ]}
         >
+          <BlurView
+            tint={tint}
+            intensity={80}
+            style={StyleSheet.absoluteFill}
+          />
           <TabBar {...props} />
         </Animated.View>
       </GestureDetector>
     );
   };
 
+  let headerConfig = Platform.select({
+    android: {},
+    ios: {
+      // headerLargeTitle: true,
+      // headerShadowVisible: false,
+      // headerBlurEffect: tint,
+      // headerTransparent: Platform.select({
+      //   ios: true,
+      //   android: false,
+      // }),
+    },
+  });
+
   return (
     <Tabs
-      screenOptions={{ tabBarActiveTintColor: theme.colors.primary }}
-      tabBar={TabBarAnim}
+      initialRouteName="home"
+      screenOptions={{
+        tabBarActiveTintColor: theme.colors.primary,
+        headerShown: false,
+      }}
+      // tabBar={TabBarAnim}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
