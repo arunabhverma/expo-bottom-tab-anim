@@ -86,14 +86,20 @@ const TabBar = ({ state, descriptors, navigation }) => {
             }}
           >
             <Icon
-              color={isFocused ? options.tabBarActiveTintColor : "#666"}
+              color={
+                isFocused
+                  ? options.tabBarActiveTintColor
+                  : options.tabBarInactiveTintColor
+              }
               focused={isFocused}
             />
             <Text
               style={[
                 { fontSize: 10 },
                 {
-                  color: isFocused ? options.tabBarActiveTintColor : "#666",
+                  color: isFocused
+                    ? options.tabBarActiveTintColor
+                    : options.tabBarInactiveTintColor,
                 },
               ]}
             >
@@ -115,7 +121,7 @@ const TabLayout = () => {
   const TAB_PADDING = 5;
 
   const ACTIVE_WIDTH = isLandScape ? height : width * 0.8;
-  const CLAMP_HEIGHT = (isLandScape ? -width * 0.03 : -height * 0.03) - bottom;
+  const CLAMP_HEIGHT = (isLandScape ? -width * 0.03 : -height * 0.01) - bottom;
 
   const isLongSet = useSharedValue(0);
   const offset = useSharedValue({ x: 0, y: 0 });
@@ -198,10 +204,11 @@ const TabLayout = () => {
     });
 
   const animatedStyles = useAnimatedStyle(() => {
+    const bottomSpace = Platform.OS === "android" ? TAB_PADDING : bottom;
     const paddingBottom = interpolate(
       offset.value.y,
       [0, CLAMP_HEIGHT],
-      [bottom, TAB_PADDING],
+      [bottomSpace, TAB_PADDING],
       Extrapolation.CLAMP
     );
     const rounded = interpolate(
@@ -216,11 +223,7 @@ const TabLayout = () => {
       [width, ACTIVE_WIDTH],
       Extrapolation.CLAMP
     );
-    const bgColor = interpolateColor(
-      isLongSet.value,
-      [0, 1],
-      [theme.colors.card, theme.colors.border]
-    );
+
     return {
       transform: [
         {
@@ -234,7 +237,14 @@ const TabLayout = () => {
         },
       ],
       paddingBottom: paddingBottom,
-      backgroundColor: Platform.OS === "android" ? bgColor : "transparent",
+      backgroundColor:
+        Platform.OS === "android"
+          ? isLongSet.value
+            ? theme.colors.border
+            : theme.colors.card
+          : isLongSet.value
+          ? theme.colors.card
+          : "transparent",
       elevation: isLongSet.value ? 10 : 5,
       width: xpace,
       borderRadius: rounded,
@@ -258,16 +268,15 @@ const TabLayout = () => {
               position: "absolute",
               bottom: 0,
               paddingVertical: TAB_PADDING,
-
-              shadowColor: "#000",
               overflow: "hidden",
+              shadowColor: "#000",
             },
             animatedStyles,
           ]}
         >
           <BlurView
             tint={tint}
-            intensity={80}
+            intensity={Platform.select({ android: 0, ios: 100 })}
             style={StyleSheet.absoluteFill}
           />
           <TabBar {...props} />
@@ -276,44 +285,27 @@ const TabLayout = () => {
     );
   };
 
-  let headerConfig = Platform.select({
-    android: {},
-    ios: {
-      // headerLargeTitle: true,
-      // headerShadowVisible: false,
-      // headerBlurEffect: tint,
-      // headerTransparent: Platform.select({
-      //   ios: true,
-      //   android: false,
-      // }),
-    },
-  });
-
   return (
     <Tabs
-      initialRouteName="home"
+      initialRouteName="(home)"
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: tint === "dark" ? "#757575" : "#666",
         headerShown: false,
       }}
-      // tabBar={TabBarAnim}
+      tabBar={TabBarAnim}
     >
       <Tabs.Screen
-        name="home"
+        name="(home)"
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              // name={focused ? "home" : "home-outline"}
-              name={"home"}
-              size={24}
-              color={color}
-            />
+            <Ionicons name={"home"} size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="favorite"
+        name="(favorite)"
         options={{
           title: "Favorite",
           tabBarIcon: ({ color, focused }) => (
@@ -327,7 +319,7 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="(search)"
         options={{
           title: "Search",
           tabBarIcon: ({ color }) => (
@@ -336,7 +328,7 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="(profile)"
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
